@@ -12,8 +12,36 @@ const ds=[["10/30 五","青島・宮崎海岸",[["09:20","抵達宮崎機場"],[
 document.getElementById("days").innerHTML=ds.map(d=>'<div class="card day"><small>'+d[0]+'</small><h3>'+d[1]+'</h3>'+d[2].map(e=>'<div class="event"><div class="time">'+e[0]+'</div><div>'+e[1]+'</div></div>').join("")+'</div>').join("");
 let diff=Math.ceil((new Date(2026,9,30)-new Date(new Date().toDateString()))/86400000);document.getElementById("count").textContent=diff>0?diff+" 天":diff===0?"今天出發":"旅途中";
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".page,.nav button").forEach(x=>x.classList.remove("active"));document.getElementById(b.dataset.p).classList.add("active");b.classList.add("active");scrollTo(0,0)});
-const items=["宮崎住宿","鹿兒島住宿","宮崎租車 10/30–11/1","確認 11/1 JR 車次","台灣駕照","駕照日文譯本","租車保險","旅遊保險","網卡／eSIM"];let ck=JSON.parse(localStorage.getItem("ck")||"[0,1]");function rc(){checks.innerHTML=items.map((x,i)=>'<label class="check"><input type="checkbox" data-i="'+i+'" '+(ck.includes(i)?"checked":"")+"><span>'+x+"</span></label>").join("");checks.querySelectorAll("input").forEach(c=>c.onchange=()=>{let i=+c.dataset.i;ck=c.checked?[...new Set([...ck,i])]:ck.filter(v=>v!==i);localStorage.setItem("ck",JSON.stringify(ck))})}rc();reset.onclick=()=>{ck=[];localStorage.setItem("ck","[]");rc()};
-let notes=JSON.parse(localStorage.getItem("notes")||"[]");function rn(){document.getElementById("notes").innerHTML=notes.map((n,i)=>'<div class="note"><span>'+n+'</span><button data-i="'+i+'">刪除</button></div>').join("");document.querySelectorAll("#notes button").forEach(b=>b.onclick=()=>{notes.splice(+b.dataset.i,1);localStorage.setItem("notes",JSON.stringify(notes));rn()})}rn();nf.onsubmit=e=>{e.preventDefault();let v=ni.value.trim();if(v){notes.push(v);localStorage.setItem("notes",JSON.stringify(notes));ni.value="";rn()}};
-let bs=JSON.parse(localStorage.getItem("budget")||"[]");function rb(){budgets.innerHTML=bs.map((b,i)=>'<div class="note"><span>'+b.n+'　NT$'+Number(b.a).toLocaleString()+'</span><button data-i="'+i+'">刪除</button></div>').join("");total.textContent="NT$"+bs.reduce((s,b)=>s+Number(b.a),0).toLocaleString();document.querySelectorAll("#budgets button").forEach(x=>x.onclick=()=>{bs.splice(+x.dataset.i,1);localStorage.setItem("budget",JSON.stringify(bs));rb()})}rb();bf.onsubmit=e=>{e.preventDefault();let n=bn.value.trim(),a=Number(ba.value);if(n&&a>=0){bs.push({n,a});localStorage.setItem("budget",JSON.stringify(bs));bf.reset();rb()}};
+const items=["宮崎住宿","鹿兒島住宿","宮崎租車 10/30–11/1","確認 11/1 JR 車次","台灣駕照","駕照日文譯本","租車保險","旅遊保險","網卡／eSIM"];
+const checksEl=document.getElementById("checks"),resetEl=document.getElementById("reset");
+let ck=JSON.parse(localStorage.getItem("ck")||"[0,1]");
+function rc(){
+  checksEl.innerHTML=items.map((x,i)=>'<label class="check"><input type="checkbox" data-i="'+i+'" '+(ck.includes(i)?'checked':'')+'><span>'+x+'</span></label>').join("");
+  checksEl.querySelectorAll("input").forEach(c=>c.onchange=()=>{
+    let i=+c.dataset.i;
+    ck=c.checked?[...new Set([...ck,i])]:ck.filter(v=>v!==i);
+    localStorage.setItem("ck",JSON.stringify(ck));
+  });
+}
+rc();
+resetEl.onclick=()=>{ck=[];localStorage.setItem("ck","[]");rc()};
+const notesEl=document.getElementById("notes"),nfEl=document.getElementById("nf"),niEl=document.getElementById("ni");
+let notes=JSON.parse(localStorage.getItem("notes")||"[]");
+function esc(s){return String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));}
+function rn(){
+  notesEl.innerHTML=notes.map((n,i)=>'<div class="note"><span>'+esc(n)+'</span><button type="button" data-i="'+i+'">刪除</button></div>').join("");
+  notesEl.querySelectorAll("button").forEach(b=>b.onclick=()=>{notes.splice(+b.dataset.i,1);localStorage.setItem("notes",JSON.stringify(notes));rn()});
+}
+rn();
+nfEl.onsubmit=e=>{e.preventDefault();let v=niEl.value.trim();if(v){notes.push(v);localStorage.setItem("notes",JSON.stringify(notes));niEl.value="";rn()}};
+const budgetsEl=document.getElementById("budgets"),totalEl=document.getElementById("total"),bfEl=document.getElementById("bf"),bnEl=document.getElementById("bn"),baEl=document.getElementById("ba");
+let bs=JSON.parse(localStorage.getItem("budget")||"[]");
+function rb(){
+  budgetsEl.innerHTML=bs.map((b,i)=>'<div class="note"><span>'+esc(b.n)+'　NT$'+Number(b.a).toLocaleString()+'</span><button type="button" data-i="'+i+'">刪除</button></div>').join("");
+  totalEl.textContent="NT$"+bs.reduce((s,b)=>s+Number(b.a),0).toLocaleString();
+  budgetsEl.querySelectorAll("button").forEach(x=>x.onclick=()=>{bs.splice(+x.dataset.i,1);localStorage.setItem("budget",JSON.stringify(bs));rb()});
+}
+rb();
+bfEl.onsubmit=e=>{e.preventDefault();let n=bnEl.value.trim(),a=Number(baEl.value);if(n&&Number.isFinite(a)&&a>=0){bs.push({n,a});localStorage.setItem("budget",JSON.stringify(bs));bfEl.reset();rb()}};
 if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js");
 </script></body></html>
